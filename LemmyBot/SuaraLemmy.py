@@ -1,39 +1,55 @@
 
-from elevenlabs import play
-from elevenlabs.client import ElevenLabs
+import asyncio
+import edge_tts
 import Creds
 import os
-import requests
+import subprocess
 
 class SuaraElevenLabs:
     def __init__(self) -> None:
         pass
 
-    def playSuaraLemmy(self, textCharAI):
-        os.environ['PATH'] += os.pathsep + Creds.PathFFMPEG
-        client = ElevenLabs(api_key=Creds.APIKeyEleven)
+    async def playSuaraLemmy(self, textCharAI):
+        # Indonesian female voice (free, via Edge TTS)
+        VOICE = "id-ID-GadisNeural"
+        OUTPUT_FILE = "response.mp3"
 
-        # Check credits using ElevenLabs REST API
+        # Locate ffplay based on Creds.PathFFMPEG
+        ffmpeg_invoker = "ffplay" # Default to system path
+        if hasattr(Creds, 'PathFFMPEG') and Creds.PathFFMPEG:
+            ffmpeg_path_file = Creds.PathFFMPEG
+            # If it points to ffmpeg.exe, get the dir and point to ffplay.exe
+            if os.path.isfile(ffmpeg_path_file):
+                ffmpeg_dir = os.path.dirname(ffmpeg_path_file)
+                candidate = os.path.join(ffmpeg_dir, "ffplay.exe")
+                if os.path.exists(candidate):
+                    ffmpeg_invoker = candidate
+            elif os.path.isdir(ffmpeg_path_file):
+                candidate = os.path.join(ffmpeg_path_file, "ffplay.exe")
+                if os.path.exists(candidate):
+                    ffmpeg_invoker = candidate
+
+        # Generate audio
         try:
-            response = requests.get(
-                "https://api.elevenlabs.io/v1/user",
-                headers={"xi-api-key": Creds.APIKeyEleven}
-            )
-            response.raise_for_status()
-            user_info = response.json()
-            used = user_info.get("subscription", {}).get("character_count", 0)
-            maxChar = user_info.get("subscription", {}).get("character_limit", 10000)
-            if maxChar - used < 1000:
-                print(f"WARNING: ElevenLabs credits are low ({maxChar - used} remaining)")
-            else:
-                print(f"ElevenLabs credits: {maxChar - used} characters remaining")
+            communicate = edge_tts.Communicate(textCharAI, VOICE)
+            await communicate.save(OUTPUT_FILE)
         except Exception as e:
-            print(f"Could not check ElevenLabs credits: {e}")
+            print(f"Error generating audio with edge-tts: {e}")
+            return
 
-        # Suara lemmy, yang bisa diganti sesuai kebutuhan
-        audioLemmy = client.generate(
-            text=textCharAI,
-            voice=Creds.SuaraLemmyID,
-            model="eleven_multilingual_v2"
-        )
-        play(audioLemmy)
+        # Play audio (blocking)
+        try:
+            # -nodisp: No graphical window
+            # -autoexit: Close after playing
+            # -hide_banner: Less output
+            subprocess.run([ffmpeg_invoker, "-nodisp", "-autoexit", "-hide_banner", OUTPUT_FILE], check=True)
+        except Exception as e:
+            print(f"Error playing audio: {e}")
+            print(f"Make sure ffplay is available at or near {Creds.PathFFMPEG}")
+        
+        # Clean up
+        if os.path.exists(OUTPUT_FILE):
+            try:
+                os.remove(OUTPUT_FILE)
+            except:
+                pass

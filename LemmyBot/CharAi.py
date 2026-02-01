@@ -38,7 +38,10 @@ class CharAI:
 
                 # F for speech-to-text, L for manual text, else YouTube chat
                 print("Press 1 for Speech-to-Text, 2 for Manual Input, or wait for YouTube Chat (Press Q to quit):")
-                if keyboard.read_key('1'):
+                
+                pressed_key = keyboard.read_key()
+                
+                if pressed_key == '1':
                     print("[Speech-to-Text mode]")
                     recognizer = sr.Recognizer()
                     with sr.Microphone() as source:
@@ -50,9 +53,10 @@ class CharAI:
                     except Exception as e:
                         print(f"Speech recognition error: {e}")
                         continue
-                elif keyboard.read_key('2'):
+                elif pressed_key == '2':
+                    print("Enter message manually:")
                     message = input()
-                elif keyboard.read_key('3'):
+                elif pressed_key == '3':
                     print("[Mengambil pesan dari YouTube Live Chat]")
                     yt_msg = yt_chat.getLiveChat()
                     if yt_msg:
@@ -61,8 +65,10 @@ class CharAI:
                     else:
                         print("Tidak ada pesan YouTube yang tersedia.")
                         continue
-                elif keyboard.read_key('q'):
+                elif pressed_key.lower() == 'q':
                     raise SessionClosedError()
+                else:
+                    continue
                 # keluar dari loop jika pesan adalah "\" atau mengandung kata perpisahan
 
                 # kirim pesan ke CharacterAI dan dapatkan balasannya
@@ -71,12 +77,12 @@ class CharAI:
 
                 print(f"[Lemmy Axioma]: {reply_text}")
                 OBSClient.set_speaking_state(True)
-                ElevenLemmy.playSuaraLemmy(reply_text)
+                await ElevenLemmy.playSuaraLemmy(reply_text)
                 OBSClient.set_speaking_state(False)
 
         except SessionClosedError:
             print(f"[Lemmy]: session closed. Sampai Nanti!")
-            ElevenLemmy.playSuaraLemmy("session closed. Sampai Nanti!")
+            await ElevenLemmy.playSuaraLemmy("session closed. Sampai Nanti!")
 
         finally:
             # Tutup session client sama websocket OBS
