@@ -74,3 +74,69 @@ class OBSWebsocketsLemmy:
 
         except Exception as e:
             print(f"⚠️ Error while toggling speaking state: {e}")
+
+    def get_speaking_item_id(self):
+        """Helper to get the item ID of the speaking avatar for animation."""
+        if not self.ws: return None
+        try:
+            resp = self.ws.call(requests.GetSceneItemId(
+                sceneName=self.sceneName, sourceName=self.Speaking_Lemmy
+            ))
+            return resp.getSceneItemId()
+        except Exception:
+            return None
+
+    def set_speaking_bounce(self, item_id, base_transform, bounce_offset):
+        """
+        Sets the positionY to base_transform['positionY'] - bounce_offset
+        """
+        if not self.ws or not item_id: return
+        
+        try:
+            # Ensure we use standard Python float for JSON serialization
+            new_y = float(base_transform['positionY'] - bounce_offset)
+            
+            self.ws.call(requests.SetSceneItemTransform(
+                sceneName=self.sceneName, 
+                sceneItemId=item_id,
+                sceneItemTransform={
+                    'positionX': base_transform['positionX'],
+                    'positionY': new_y
+                }
+            ))
+        except Exception as e:
+            print(f"DEBUG: Error setting bounce: {e}")
+
+    def get_transform(self, item_id):
+        if not self.ws or not item_id: return None
+        try:
+            resp = self.ws.call(requests.GetSceneItemTransform(
+                sceneName=self.sceneName, sceneItemId=item_id
+            ))
+            return resp.getSceneItemTransform()
+        except Exception as e:
+            print(f"DEBUG: Error getting transform: {e}")
+            return None
+
+    def set_speaking_contrast(self, contrast_val):
+        """
+        Sets the 'contrast' filter setting for the speaking source.
+        Assumes a filter named 'Color Correction' exists on the source.
+        """
+        if not self.ws: return
+        
+        try:
+            # Note: The filter name must match EXACTLY what is in OBS.
+            # Standard name is "Color Correction".
+            self.ws.call(requests.SetSourceFilterSettings(
+                sourceName=self.Speaking_Lemmy,
+                filterName="Color Correction", 
+                filterSettings={
+                    "contrast": float(contrast_val)
+                },
+                overlay=True # overlay=True updates only the keys provided
+            ))
+        except Exception as e:
+            # Use a quieter error since filter might not exist
+            # print(f"DEBUG: Error setting contrast: {e}") 
+            pass

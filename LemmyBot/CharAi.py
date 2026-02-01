@@ -77,12 +77,12 @@ class CharAI:
 
                 print(f"[Lemmy Axioma]: {reply_text}")
                 OBSClient.set_speaking_state(True)
-                await ElevenLemmy.playSuaraLemmy(reply_text)
+                await ElevenLemmy.playSuaraLemmy(reply_text, obs_client=OBSClient)
                 OBSClient.set_speaking_state(False)
 
         except SessionClosedError:
             print(f"[Lemmy]: session closed. Sampai Nanti!")
-            await ElevenLemmy.playSuaraLemmy("session closed. Sampai Nanti!")
+            await ElevenLemmy.playSuaraLemmy("session closed. Sampai Nanti!", obs_client=OBSClient)
 
         finally:
             # Tutup session client sama websocket OBS

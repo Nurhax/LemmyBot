@@ -15,13 +15,13 @@ Please ensure you comply with all relevant platform terms of service. Use at you
 - **Speech-to-Text Integration:** Seamlessly chat with your chosen Character AI using your voice.
 - **Live Chat Engagement:** Respond to random or selected YouTube livestream chat messages in real time.
 - **Donation Message Handling:** Automatically reply to donation messages for increased audience interaction.
-- **Dynamic Character Modeling:** LemmyBot adapts its personality and voice using CharacterAI and ElevenLabs APIs.
+- **Dynamic Character Modeling:** LemmyBot adapts its personality using CharacterAI and its voice using Microsoft Edge TTS.
 - **OBS WebSocket Control:** Synchronizes Lemmy's speaking and idle states with your PNGTuber in OBS for lifelike reactions.
 
 ---
 
 ## Technology Stack
-- **ElevenLabs API:** High-quality text-to-speech for Lemmy's voice.
+- **Microsoft Edge TTS:** High-quality text-to-speech for Lemmy's voice (Free).
 - **YouTube Live Chat API (Unofficial):** Real-time chat message retrieval.
 - **CharacterAI API (Unofficial):** Personality-driven AI chat responses.
 - **OBS WebSockets:** Scene and PNGTuber control for visual feedback.
@@ -31,12 +31,12 @@ Please ensure you comply with all relevant platform terms of service. Use at you
 
 ## Setup Instructions
 1. **Credentials:**
-	- Create a Python file (`Creds.py`) containing your ElevenLabs API key, YouTube Livestream ID, CharacterAI API key, and relevant voice/character IDs.
+	- Create a Python file (`Creds.py`) containing your YouTube Livestream ID, CharacterAI API key, and relevant character IDs.
 2. **OBS & PNGTuber:**
 	- Install and configure OBS WebSockets.
 	- Set up your PNGTuber sources and ensure scene/item names match your configuration.
 3. **Dependencies:**
-	- Install required Python packages: `pytchat`, `obswebsocket`, `SpeechRecognition`, `pyaudio`, `requests`, etc.
+	- Install required Python packages: `pytchat`, `obswebsocket`, `SpeechRecognition`, `pyaudio`, `requests`, `edge-tts`, etc.
 4. **Run LemmyBot:**
 	- Execute `Lemmy.py` to start the assistant and begin interacting with your livestream audience.
 
